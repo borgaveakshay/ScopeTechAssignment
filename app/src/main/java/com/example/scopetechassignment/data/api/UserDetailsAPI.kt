@@ -5,6 +5,6 @@ import retrofit2.http.GET
 
 interface UserDetailsAPI {
 
-    @GET("api/op=list")
+    @GET("api/?op=list")
     suspend fun getUserDetails(): UserListResponse
 }

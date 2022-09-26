@@ -10,10 +10,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.scopetechassignment.R
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.viewmodels.GetUserListViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val viewModel: GetUserListViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,8 +31,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 Status.SUCCESS -> {
                     it.data?.let { data ->
-                        Toast.makeText(this@MainActivity, data.userData.size, Toast.LENGTH_LONG)
-                            .show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "size : ${data.userData.size}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }

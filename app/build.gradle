@@ -23,11 +23,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            buildConfigField 'String', 'BASE_URL', '"http://mobi.connectedcar360.net/"'
+            buildConfigField 'String', 'BASE_URL', '"https://mobi.connectedcar360.net/"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            buildConfigField 'String', 'BASE_URL', '"http://mobi.connectedcar360.net/api/"'
+            buildConfigField 'String', 'BASE_URL', '"https://mobi.connectedcar360.net/"'
         }
     }
     compileOptions {
@@ -69,7 +69,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0-alpha02'
     //extensions
     implementation 'androidx.fragment:fragment-ktx:1.5.3'
-    
+
 
 
 
