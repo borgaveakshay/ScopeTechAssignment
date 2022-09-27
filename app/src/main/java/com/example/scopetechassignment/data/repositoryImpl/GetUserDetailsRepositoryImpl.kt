@@ -1,7 +1,7 @@
 package com.example.scopetechassignment.data.repositoryImpl
 
 import com.example.scopetechassignment.data.api.UserDetailsAPI
-import com.example.scopetechassignment.data.models.UserListResponse
+import com.example.scopetechassignment.data.models.network.UserListResponse
 import com.example.scopetechassignment.domain.Result
 import com.example.scopetechassignment.domain.repositories.GetUserDetailsRepository
 import javax.inject.Inject

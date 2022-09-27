@@ -1,9 +1,9 @@
 package com.example.scopetechassignment.domain.usecases
 
-import com.example.scopetechassignment.data.models.Data
-import com.example.scopetechassignment.data.models.Owner
-import com.example.scopetechassignment.data.models.UserListResponse
-import com.example.scopetechassignment.data.models.Vehicle
+import com.example.scopetechassignment.data.models.network.Data
+import com.example.scopetechassignment.data.models.network.Owner
+import com.example.scopetechassignment.data.models.network.UserListResponse
+import com.example.scopetechassignment.data.models.network.Vehicle
 import com.example.scopetechassignment.domain.Result
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.domain.repositories.GetUserDetailsRepository

@@ -2,7 +2,7 @@ package com.example.scopetechassignment.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.scopetechassignment.data.models.UserListResponse
+import com.example.scopetechassignment.data.models.network.UserListResponse
 import com.example.scopetechassignment.domain.Result
 import com.example.scopetechassignment.domain.usecases.GetUserDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -1,4 +1,4 @@
-package com.example.scopetechassignment.data.models
+package com.example.scopetechassignment.data.models.network
 
 
 import com.google.gson.annotations.SerializedName

@@ -1,7 +1,7 @@
 package com.example.scopetechassignment.data.api
 
-import com.example.scopetechassignment.data.models.UserListResponse
-import com.example.scopetechassignment.data.models.VehicleLocationResponse
+import com.example.scopetechassignment.data.models.network.UserListResponse
+import com.example.scopetechassignment.data.models.network.VehicleLocationResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

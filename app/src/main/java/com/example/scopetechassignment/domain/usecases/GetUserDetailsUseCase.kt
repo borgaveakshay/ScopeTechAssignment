@@ -1,6 +1,6 @@
 package com.example.scopetechassignment.domain.usecases
 
-import com.example.scopetechassignment.data.models.UserListResponse
+import com.example.scopetechassignment.data.models.network.UserListResponse
 import com.example.scopetechassignment.domain.Result
 import com.example.scopetechassignment.domain.repositories.GetUserDetailsRepository
 import javax.inject.Inject

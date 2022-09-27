@@ -1,7 +1,7 @@
 package com.example.scopetechassignment.data.repositoryImpl
 
 import com.example.scopetechassignment.data.api.UserDetailsAPI
-import com.example.scopetechassignment.data.models.VehicleLocationResponse
+import com.example.scopetechassignment.data.models.network.VehicleLocationResponse
 import com.example.scopetechassignment.domain.Result
 import com.example.scopetechassignment.domain.repositories.GetVehicleLocationRepository
 import javax.inject.Inject

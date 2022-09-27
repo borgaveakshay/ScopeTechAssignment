@@ -22,8 +22,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.example.scopetechassignment.data.models.Data
-import com.example.scopetechassignment.data.models.Owner
+import com.example.scopetechassignment.data.models.network.Data
+import com.example.scopetechassignment.data.models.network.Owner
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetUserListViewModel
@@ -104,7 +104,7 @@ fun UserList(modifier: Modifier = Modifier, userList: List<Data>) {
             items(userList) { user ->
                 user.owner?.let { owner ->
                     UserRow(modifier, owner)
-                    Divider(color = Color.Gray)
+                    Divider(color = Color.LightGray)
                 }
             }
         }
