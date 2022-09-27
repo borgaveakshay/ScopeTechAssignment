@@ -18,12 +18,10 @@ import com.example.scopetechassignment.data.models.network.VehicleLocationModel
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetVehicleLocationViewModel
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val LOCATION_REQUEST_CODE = 1
@@ -99,32 +97,25 @@ class MapActivity : AppCompatActivity() {
 @Composable
 fun LoadGoogleMap(modifier: Modifier = Modifier, vehicleList: List<VehicleLocationModel>) {
     if (vehicleList.isNotEmpty()) {
-        val firstVehicle = LatLng(vehicleList[0].lat, vehicleList[0].lon)
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(firstVehicle, 10f)
-        }
+        //Need to fetch current location and add as the camera position state.
+//        val firstVehicle = LatLng(vehicleList[0].lat, vehicleList[0].lon)
+//        val cameraPositionState = rememberCameraPositionState {
+//            position = CameraPosition.fromLatLngZoom(firstVehicle, 10f)
+//        }
         GoogleMap(
-            modifier = modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            modifier = modifier.fillMaxSize()
         ) {
-            Marker(
-                state = MarkerState(position = firstVehicle),
-                title = "Singapore",
-                snippet = "Marker in Singapore"
-            )
-            if (vehicleList.size > 1) {
-                for (i in 1..vehicleList.size) {
-                    Marker(
-                        state = MarkerState(
-                            position = LatLng(
-                                vehicleList[i].lat,
-                                vehicleList[i].lon
-                            )
-                        ),
-                        title = "Singapore",
-                        snippet = "Marker in Singapore"
-                    )
-                }
+            vehicleList.forEach {
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            it.lat,
+                            it.lon
+                        )
+                    ),
+                    title = "Singapore",
+                    snippet = "Marker in Singapore"
+                )
             }
         }
     }
