@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,63 +37,37 @@ class MapActivity : AppCompatActivity() {
         checkForLocationPermission()
         getVehicleLocation(userId)
         setContent {
-            val vehicleLocationState = remember {
-                mutableStateOf<List<VehicleLocationModel>>(
-                    emptyList()
-                )
+            MaterialTheme {
+                GetVehicleLocationAndMap()
             }
-            LoadGoogleMap(vehicleList = vehicleLocationState.value)
-            collectLatestLifecycleFlow(viewModel.vehicleLocationResponseState) {
-                when (it.status) {
-                    Status.LOADING -> {
-                        // Do nothing
-                    }
-                    Status.ERROR -> {
-                        Toast.makeText(this, "Error: ${it.errorMessage}", Toast.LENGTH_LONG).show()
-                    }
-                    Status.SUCCESS -> {
-                        it.data?.let { response ->
-                            vehicleLocationState.value = response.vehicleGeoData
-                        }
+        }
+    }
+
+    @Composable
+    private fun GetVehicleLocationAndMap() {
+        val vehicleLocationState = remember {
+            mutableStateOf<List<VehicleLocationModel>>(
+                emptyList()
+            )
+        }
+        LoadGoogleMap(vehicleList = vehicleLocationState.value)
+        collectLatestLifecycleFlow(viewModel.vehicleLocationResponseState) {
+            when (it.status) {
+                Status.LOADING -> {
+                    // Do nothing
+                }
+                Status.ERROR -> {
+                    Toast.makeText(this, "Error: ${it.errorMessage}", Toast.LENGTH_LONG).show()
+                }
+                Status.SUCCESS -> {
+                    it.data?.let { response ->
+                        vehicleLocationState.value = response.vehicleGeoData
                     }
                 }
             }
         }
     }
 
-    @Composable
-    fun LoadGoogleMap(modifier: Modifier = Modifier, vehicleList: List<VehicleLocationModel>) {
-        if (vehicleList.isNotEmpty()) {
-            val firstVehicle = LatLng(vehicleList[0].lat, vehicleList[0].lon)
-            val cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(firstVehicle, 10f)
-            }
-            GoogleMap(
-                modifier = modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState
-            ) {
-                Marker(
-                    state = MarkerState(position = firstVehicle),
-                    title = "Singapore",
-                    snippet = "Marker in Singapore"
-                )
-                if (vehicleList.size > 1) {
-                    for (i in 1..vehicleList.size) {
-                        Marker(
-                            state = MarkerState(
-                                position = LatLng(
-                                    vehicleList[i].lat,
-                                    vehicleList[i].lon
-                                )
-                            ),
-                            title = "Singapore",
-                            snippet = "Marker in Singapore"
-                        )
-                    }
-                }
-            }
-        }
-    }
 
     private fun getVehicleLocation(userId: String?) = viewModel.getVehicleLocation(userId)
 
@@ -117,6 +92,40 @@ class MapActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     LOCATION_REQUEST_CODE
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadGoogleMap(modifier: Modifier = Modifier, vehicleList: List<VehicleLocationModel>) {
+    if (vehicleList.isNotEmpty()) {
+        val firstVehicle = LatLng(vehicleList[0].lat, vehicleList[0].lon)
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(firstVehicle, 10f)
+        }
+        GoogleMap(
+            modifier = modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            Marker(
+                state = MarkerState(position = firstVehicle),
+                title = "Singapore",
+                snippet = "Marker in Singapore"
+            )
+            if (vehicleList.size > 1) {
+                for (i in 1..vehicleList.size) {
+                    Marker(
+                        state = MarkerState(
+                            position = LatLng(
+                                vehicleList[i].lat,
+                                vehicleList[i].lon
+                            )
+                        ),
+                        title = "Singapore",
+                        snippet = "Marker in Singapore"
+                    )
+                }
             }
         }
     }
