@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 
 data class Data(
     @SerializedName("owner")
-    val owner: Owner,
+    val owner: Owner?,
     @SerializedName("userid")
-    val userid: Int,
+    val userid: Int?,
     @SerializedName("vehicles")
-    val vehicles: List<Vehicle>
+    val vehicles: List<Vehicle>?
 )
