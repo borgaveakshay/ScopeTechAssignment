@@ -1,16 +1,22 @@
 package com.example.scopetechassignment.presentation.activities
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.scopetechassignment.data.models.network.Data
-import com.example.scopetechassignment.data.models.network.Owner
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetUserListViewModel
@@ -43,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun CollectUserDetails() {
         val userResponseState = remember { mutableStateOf<List<Data>>(emptyList()) }
-        UserList(userList = userResponseState.value)
+        UserList(userList = userResponseState.value, context = this)
         collectLatestLifecycleFlow(viewModel.userDetailState) {
             when (it.status) {
                 Status.LOADING -> {
@@ -65,45 +70,63 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun UserRow(
     modifier: Modifier = Modifier,
-    user: Owner
+    user: Data,
+    context: Context
 ) {
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp)
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(user.photo),
-            contentScale = ContentScale.FillWidth,
-            modifier = modifier
-                .width(80.dp)
-                .height(80.dp)
-                .padding(10.dp),
-            contentDescription = "Profile Image"
-        )
-        Text(
-            text = "${user.name} ${user.surname}",
+    MaterialTheme {
+        Row(
             modifier = modifier
                 .fillMaxWidth()
-                .align(Alignment.CenterVertically)
-                .padding(top = 10.dp),
-            fontSize = 20.sp,
-            fontStyle = FontStyle.Italic
-        )
-
+                .height(80.dp)
+                .clickable(
+                    onClick = {
+                        user.userid?.let { userId ->
+                            val bundle = Bundle()
+                            bundle.putInt("userId", userId)
+                            val intent = Intent(context, MapActivity::class.java).apply {
+                                putExtras(bundle)
+                            }
+                            context.startActivity(intent)
+                        }
+                    },
+                    indication = rememberRipple(bounded = true),
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
+        ) {
+            user.owner?.let { user ->
+                Image(
+                    painter = rememberAsyncImagePainter(user.photo),
+                    contentScale = ContentScale.FillWidth,
+                    modifier = modifier
+                        .width(80.dp)
+                        .height(80.dp)
+                        .padding(10.dp),
+                    contentDescription = "Profile Image"
+                )
+                Text(
+                    text = "${user.name} ${user.surname}",
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
+                        .padding(top = 10.dp),
+                    fontSize = 20.sp,
+                    fontStyle = FontStyle.Italic
+                )
+            }
+        }
     }
-
 
 }
 
 @Composable
-fun UserList(modifier: Modifier = Modifier, userList: List<Data>) {
+fun UserList(modifier: Modifier = Modifier, userList: List<Data>, context: Context) {
     if (userList.isNotEmpty()) {
-        LazyColumn(modifier = modifier.fillMaxSize()) {
-            items(userList) { user ->
-                user.owner?.let { owner ->
-                    UserRow(modifier, owner)
+        MaterialTheme {
+            LazyColumn(modifier = modifier.fillMaxSize()) {
+                items(userList) { user ->
+                    UserRow(modifier, user, context)
                     Divider(color = Color.LightGray)
                 }
             }
