@@ -74,30 +74,31 @@ fun UserRow(
     context: Context
 ) {
     MaterialTheme {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .clickable(
-                    onClick = {
-                        user.userid?.let { userId ->
-                            val bundle = Bundle()
-                            bundle.putInt("userId", userId)
-                            val intent = Intent(context, MapActivity::class.java).apply {
-                                putExtras(bundle)
+        user.owner?.let { owner ->
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .clickable(
+                        onClick = {
+                            user.userid?.let { userId ->
+                                val intent = Intent(context, MapActivity::class.java).apply {
+                                    val bundle = Bundle()
+                                    bundle.putInt("userId", userId)
+                                    putExtras(bundle)
+                                }
+                                context.startActivity(intent)
                             }
-                            context.startActivity(intent)
+                        },
+                        indication = rememberRipple(bounded = true),
+                        interactionSource = remember {
+                            MutableInteractionSource()
                         }
-                    },
-                    indication = rememberRipple(bounded = true),
-                    interactionSource = remember {
-                        MutableInteractionSource()
-                    }
-                ),
-        ) {
-            user.owner?.let { user ->
+                    ),
+            ) {
+
                 Image(
-                    painter = rememberAsyncImagePainter(user.photo),
+                    painter = rememberAsyncImagePainter(owner.photo),
                     contentScale = ContentScale.FillWidth,
                     modifier = modifier
                         .width(80.dp)
@@ -106,7 +107,7 @@ fun UserRow(
                     contentDescription = "Profile Image"
                 )
                 Text(
-                    text = "${user.name} ${user.surname}",
+                    text = "${owner.name} ${owner.surname}",
                     modifier = modifier
                         .fillMaxWidth()
                         .align(Alignment.CenterVertically)

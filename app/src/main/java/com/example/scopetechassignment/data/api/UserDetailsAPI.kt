@@ -10,6 +10,6 @@ interface UserDetailsAPI {
     @GET("api/?op=list")
     suspend fun getUserDetails(): UserListResponse
 
-    @GET("?op=getlocations")
+    @GET("api/?op=getlocations")
     suspend fun getVehicleLocation(@Query("userid") userId: String): VehicleLocationResponse
 }

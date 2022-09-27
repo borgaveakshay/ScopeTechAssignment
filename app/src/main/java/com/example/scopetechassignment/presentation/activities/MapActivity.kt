@@ -33,11 +33,12 @@ class MapActivity : AppCompatActivity() {
     private val viewModel by viewModels<GetVehicleLocationViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val userId = intent.extras?.getString("userId")
+        val userId = intent.extras?.getInt("userId")
         checkForLocationPermission()
-        getVehicleLocation(userId)
+        getVehicleLocation(userId.toString())
         setContent {
             MaterialTheme {
+                GoogleMap(modifier = Modifier.fillMaxSize())
                 GetVehicleLocationAndMap()
             }
         }
@@ -68,9 +69,7 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-
     private fun getVehicleLocation(userId: String?) = viewModel.getVehicleLocation(userId)
-
 
     private fun checkForLocationPermission() {
         when {
