@@ -2,7 +2,9 @@ package com.example.scopetechassignment.presentation.activities
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -13,17 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.scopetechassignment.data.models.network.VehicleLocationModel
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetVehicleLocationViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.*
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val LOCATION_REQUEST_CODE = 1
@@ -32,28 +33,57 @@ private const val LOCATION_REQUEST_CODE = 1
 class MapActivity : AppCompatActivity() {
     private val viewModel by viewModels<GetVehicleLocationViewModel>()
     private var fusedLocationClient: FusedLocationProviderClient? = null
+    private var userId: Int? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val userId = intent.extras?.getInt("userId")
-        checkForLocationPermission()
+        userId = intent.extras?.getInt("userId")
         getVehicleLocation(userId.toString())
-
+        checkForLocationPermission()
+        checkForCurrentLocation()
         setContent {
             MaterialTheme {
                 GoogleMap(modifier = Modifier.fillMaxSize())
-                GetVehicleLocationAndMap()
             }
         }
     }
 
+    private fun checkForCurrentLocation() {
+        fusedLocationClient?.let {
+            val locationRequest = LocationRequest.create()
+            locationRequest.interval = 10000
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                checkForLocationPermission()
+                return
+            }
+            it.requestLocationUpdates(locationRequest, object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    super.onLocationResult(locationResult)
+                    setContent {
+                        GetVehicleLocationAndMap(lastKnownLocation = locationResult.lastLocation)
+                    }
+                }
+            }, Looper.getMainLooper())
+        }
+    }
+
     @Composable
-    private fun GetVehicleLocationAndMap() {
+    private fun GetVehicleLocationAndMap(lastKnownLocation: Location?) {
         val vehicleLocationState = remember {
             mutableStateOf<List<VehicleLocationModel>>(
                 emptyList()
             )
         }
-        LoadGoogleMap(vehicleList = vehicleLocationState.value)
+        LoadGoogleMap(
+            vehicleList = vehicleLocationState.value,
+            lastKnownLocation = lastKnownLocation
+        )
         collectLatestLifecycleFlow(viewModel.vehicleLocationResponseState) {
             when (it.status) {
                 Status.LOADING -> {
@@ -79,7 +109,7 @@ class MapActivity : AppCompatActivity() {
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
+                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 Toast.makeText(
@@ -108,6 +138,7 @@ class MapActivity : AppCompatActivity() {
                             grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) {
                     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                    checkForCurrentLocation()
 
                 } else {
                     Toast.makeText(
@@ -123,16 +154,36 @@ class MapActivity : AppCompatActivity() {
 }
 
 @Composable
-fun LoadGoogleMap(modifier: Modifier = Modifier, vehicleList: List<VehicleLocationModel>) {
+fun LoadGoogleMap(
+    modifier: Modifier = Modifier,
+    vehicleList: List<VehicleLocationModel>,
+    lastKnownLocation: Location?
+) {
     if (vehicleList.isNotEmpty()) {
         //Need to fetch current location and add as the camera position state.
-//        val firstVehicle = LatLng(vehicleList[0].lat, vehicleList[0].lon)
-//        val cameraPositionState = rememberCameraPositionState {
-//            position = CameraPosition.fromLatLngZoom(firstVehicle, 10f)
-//        }
-        GoogleMap(
-            modifier = modifier.fillMaxSize()
+        var cameraPositionState = CameraPositionState()
+        lastKnownLocation?.let {
+            cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(LatLng(it.latitude, it.longitude), 10f)
+            }
+        }
+
+         GoogleMap(
+            modifier = modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
         ) {
+            lastKnownLocation?.let {
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            it.latitude,
+                            it.longitude
+                        )
+                    ),
+                    title = "Its Me",
+                    snippet = "My Current Location"
+                )
+            }
             vehicleList.forEach {
                 Marker(
                     state = MarkerState(
