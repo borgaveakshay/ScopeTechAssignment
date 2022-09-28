@@ -18,6 +18,8 @@ import com.example.scopetechassignment.data.models.network.VehicleLocationModel
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetVehicleLocationViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -29,11 +31,13 @@ private const val LOCATION_REQUEST_CODE = 1
 @AndroidEntryPoint
 class MapActivity : AppCompatActivity() {
     private val viewModel by viewModels<GetVehicleLocationViewModel>()
+    private var fusedLocationClient: FusedLocationProviderClient? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val userId = intent.extras?.getInt("userId")
         checkForLocationPermission()
         getVehicleLocation(userId.toString())
+
         setContent {
             MaterialTheme {
                 GoogleMap(modifier = Modifier.fillMaxSize())
@@ -89,6 +93,30 @@ class MapActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     LOCATION_REQUEST_CODE
                 )
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            LOCATION_REQUEST_CODE -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                ) {
+                    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+                } else {
+                    Toast.makeText(
+                        this,
+                        "We need location permission to locate you correctly.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                return
             }
         }
     }
