@@ -10,7 +10,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +23,10 @@ import com.example.scopetechassignment.presentation.viewmodels.GetVehicleLocatio
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val LOCATION_REQUEST_CODE = 1
@@ -40,11 +42,6 @@ class MapActivity : AppCompatActivity() {
         getVehicleLocation(userId.toString())
         checkForLocationPermission()
         checkForCurrentLocation()
-        setContent {
-            MaterialTheme {
-                GoogleMap(modifier = Modifier.fillMaxSize())
-            }
-        }
     }
 
     private fun checkForCurrentLocation() {
@@ -66,7 +63,9 @@ class MapActivity : AppCompatActivity() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     setContent {
-                        GetVehicleLocationAndMap(lastKnownLocation = locationResult.lastLocation)
+                        locationResult.lastLocation?.let { location ->
+                            GetVehicleLocationAndMap(lastKnownLocation = location)
+                        }
                     }
                 }
             }, Looper.getMainLooper())
@@ -74,7 +73,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     @Composable
-    private fun GetVehicleLocationAndMap(lastKnownLocation: Location?) {
+    private fun GetVehicleLocationAndMap(lastKnownLocation: Location) {
         val vehicleLocationState = remember {
             mutableStateOf<List<VehicleLocationModel>>(
                 emptyList()
@@ -157,33 +156,34 @@ class MapActivity : AppCompatActivity() {
 fun LoadGoogleMap(
     modifier: Modifier = Modifier,
     vehicleList: List<VehicleLocationModel>,
-    lastKnownLocation: Location?
+    lastKnownLocation: Location
 ) {
     if (vehicleList.isNotEmpty()) {
-        //Need to fetch current location and add as the camera position state.
-        var cameraPositionState = CameraPositionState()
-        lastKnownLocation?.let {
-            cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(LatLng(it.latitude, it.longitude), 10f)
-            }
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(
+                    lastKnownLocation.latitude,
+                    lastKnownLocation.longitude
+                ), 15f
+            )
         }
 
-         GoogleMap(
+        GoogleMap(
             modifier = modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
-            lastKnownLocation?.let {
-                Marker(
-                    state = MarkerState(
-                        position = LatLng(
-                            it.latitude,
-                            it.longitude
-                        )
-                    ),
-                    title = "Its Me",
-                    snippet = "My Current Location"
-                )
-            }
+
+            Marker(
+                state = MarkerState(
+                    position = LatLng(
+                        lastKnownLocation.latitude,
+                        lastKnownLocation.longitude
+                    )
+                ),
+                title = "Its Me",
+                snippet = "My Current Location"
+            )
+
             vehicleList.forEach {
                 Marker(
                     state = MarkerState(
