@@ -136,7 +136,7 @@ fun LoadGoogleMap(
                 LatLng(
                     lastKnownLocation.latitude,
                     lastKnownLocation.longitude
-                ), 15f
+                ), 11.5f
             )
         }
 
