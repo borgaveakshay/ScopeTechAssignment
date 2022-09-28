@@ -11,9 +11,8 @@ import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.example.scopetechassignment.R
 import com.example.scopetechassignment.data.models.db.VehicleInformation
 import com.example.scopetechassignment.data.models.network.VehicleLocationModel
@@ -28,52 +27,27 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
 class MapActivity : LocationActivity() {
     private val viewModel by viewModels<GetVehicleLocationViewModel>()
     private var userId: Int? = null
+    private val firstCallTime =
+        kotlin.math.ceil(System.currentTimeMillis() / 60_000.0).toLong() * 60_000
+    private lateinit var getLocationJob: Job
+    private var vehicleList: List<VehicleLocationModel>? = null
+    private var lastKnownLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userId = intent.extras?.getInt("userId")
         getVehicleLocation(userId.toString())
         checkForCurrentLocation()
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun checkForCurrentLocation() {
-        fusedLocationClient?.let {
-            val locationRequest = LocationRequest.create()
-            locationRequest.interval = 10000
-            if (isLocationPermissionGiven()) {
-                it.requestLocationUpdates(locationRequest, object : LocationCallback() {
-                    override fun onLocationResult(locationResult: LocationResult) {
-                        super.onLocationResult(locationResult)
-                        setContent {
-                            locationResult.lastLocation?.let { location ->
-                                GetVehicleLocationAndMap(lastKnownLocation = location)
-                            }
-                        }
-                    }
-                }, Looper.getMainLooper())
-            }
-        }
-    }
-
-    @Composable
-    private fun GetVehicleLocationAndMap(lastKnownLocation: Location) {
-        val vehicleLocationState = remember {
-            mutableStateOf<List<VehicleLocationModel>>(
-                emptyList()
-            )
-        }
-        LoadGoogleMap(
-            vehicleList = vehicleLocationState.value,
-            lastKnownLocation = lastKnownLocation,
-            context = this
-        )
+        getVehicleDetailsEveryMinute()
         collectLatestLifecycleFlow(viewModel.vehicleLocationResponseState) {
             when (it.status) {
                 Status.LOADING -> {
@@ -83,12 +57,73 @@ class MapActivity : LocationActivity() {
                     Toast.makeText(this, "Error: ${it.errorMessage}", Toast.LENGTH_LONG).show()
                 }
                 Status.SUCCESS -> {
-                    it.data?.let { response ->
-                        vehicleLocationState.value = response.vehicleGeoData
-                    }
+                    vehicleList = it.data?.vehicleGeoData
+                    setMapView()
                 }
             }
         }
+        setMapView()
+    }
+
+    private fun setMapView() {
+        setContent {
+            GetVehicleLocationAndMap(
+                lastKnownLocation = lastKnownLocation,
+                vehicleList = vehicleList
+            )
+        }
+    }
+
+    private fun getVehicleDetailsEveryMinute() {
+        getLocationJob = lifecycleScope.launch {
+            // suspend till first minute comes after some seconds
+            delay(firstCallTime - System.currentTimeMillis())
+            while (true) {
+                launch {
+                    getVehicleLocation(userId.toString())
+                }
+                delay(60_000)  // 1 minute delay (suspending)
+            }
+        }
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        getLocationJob.cancel()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun checkForCurrentLocation() {
+        fusedLocationClient?.let {
+            val locationRequest = LocationRequest.create()
+            if (isLocationPermissionGiven()) {
+                it.requestLocationUpdates(locationRequest, object : LocationCallback() {
+                    override fun onLocationResult(locationResult: LocationResult) {
+                        super.onLocationResult(locationResult)
+                        locationResult.lastLocation?.let { location ->
+                            lastKnownLocation = location
+                        }
+                    }
+                }, Looper.getMainLooper())
+            }
+        }
+    }
+
+    @Composable
+    private fun GetVehicleLocationAndMap(
+        lastKnownLocation: Location?,
+        vehicleList: List<VehicleLocationModel>?
+    ) {
+        lastKnownLocation?.let { location ->
+            vehicleList?.let { vehicleList ->
+                LoadGoogleMap(
+                    vehicleList = vehicleList,
+                    lastKnownLocation = location,
+                    context = this
+                )
+            }
+        } ?: GoogleMap(modifier = Modifier.fillMaxSize())
     }
 
     private fun getVehicleLocation(userId: String?) = viewModel.getVehicleLocation(userId)
@@ -144,7 +179,7 @@ fun LoadGoogleMap(
         GoogleMap(
             modifier = modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties =  MapProperties(isMyLocationEnabled = true)
+            properties = MapProperties(isMyLocationEnabled = true)
         ) {
 
             MapMarker(
