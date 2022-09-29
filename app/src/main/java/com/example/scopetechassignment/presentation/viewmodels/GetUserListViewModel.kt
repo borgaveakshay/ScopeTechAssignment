@@ -10,6 +10,7 @@ import com.example.scopetechassignment.domain.usecases.GetUserDetailsUseCase
 import com.example.scopetechassignment.domain.usecases.GetUserInfoFromDbUseCase
 import com.example.scopetechassignment.domain.usecases.StoreUserDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,19 +35,27 @@ class GetUserListViewModel @Inject constructor(
     }
 
     private fun getUserDetails() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _userDetailsState.emit(getUserDetailsUseCase())
         }
     }
 
     private fun getUserDetailsFromDb() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val result = getUserInfoFromDbUseCase()
             when (result.status) {
                 Status.ERROR -> {
                     storeUserDetailsUseCase()
                 }
-                Status.SUCCESS -> _userDetailsFromDbState.emit(result)
+                Status.SUCCESS -> {
+                    result.data?.let {
+                        it.collect { userList ->
+                            if (userList.isEmpty()) storeUserDetailsUseCase() else _userDetailsFromDbState.emit(
+                                Result.success(userList)
+                            )
+                        }
+                    }
+                }
                 else -> {
                     // Do nothing
                 }
