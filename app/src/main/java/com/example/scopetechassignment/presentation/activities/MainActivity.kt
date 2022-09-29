@@ -29,9 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.scopetechassignment.data.models.db.UserEntity
-import com.example.scopetechassignment.data.models.network.Data
 import com.example.scopetechassignment.domain.Status
-import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
+import com.example.scopetechassignment.presentation.util.collectLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetUserListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
     private fun CollectDatabaseUserDetails() {
         val userResponseState = remember { mutableStateOf<List<UserEntity>>(emptyList()) }
         UserListFromDatabase(userList = userResponseState.value, context = this)
-        collectLatestLifecycleFlow(viewModel.userDetailsFromDbState) {
+        collectLifecycleFlow(viewModel.userDetailsFromDbState) {
             when (it.status) {
                 Status.LOADING -> {
                     //Do nothing
@@ -65,80 +64,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        }
-    }
-
-    @Composable
-    private fun CollectUserDetails() {
-        val userResponseState = remember { mutableStateOf<List<Data>>(emptyList()) }
-        UserList(userList = userResponseState.value, context = this)
-        collectLatestLifecycleFlow(viewModel.userDetailState) {
-            when (it.status) {
-                Status.LOADING -> {
-                    //Do nothing
-                }
-                Status.ERROR -> {
-                    Toast.makeText(this@MainActivity, it.errorMessage, Toast.LENGTH_LONG).show()
-                }
-                Status.SUCCESS -> {
-                    it.data?.let { data ->
-                        userResponseState.value = data.userData
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun UserRow(
-    modifier: Modifier = Modifier,
-    user: Data,
-    context: Context
-) {
-    MaterialTheme {
-        user.owner?.let { owner ->
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .clickable(
-                        onClick = {
-                            user.userid?.let { userId ->
-                                val intent = Intent(context, MapActivity::class.java).apply {
-                                    val bundle = Bundle()
-                                    bundle.putInt("userId", userId)
-                                    putExtras(bundle)
-                                }
-                                context.startActivity(intent)
-                            }
-                        },
-                        indication = rememberRipple(bounded = true),
-                        interactionSource = remember {
-                            MutableInteractionSource()
-                        }
-                    ),
-            ) {
-
-                Image(
-                    painter = rememberAsyncImagePainter(owner.photo),
-                    contentScale = ContentScale.FillWidth,
-                    modifier = modifier
-                        .width(80.dp)
-                        .height(80.dp)
-                        .padding(10.dp),
-                    contentDescription = "Profile Image"
-                )
-                Text(
-                    text = "${owner.name} ${owner.surname}",
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .align(Alignment.CenterVertically)
-                        .padding(top = 10.dp),
-                    fontSize = 20.sp,
-                    fontStyle = FontStyle.Italic
-                )
-            }
         }
     }
 
@@ -196,19 +121,6 @@ fun UserRow(
     }
 }
 
-@Composable
-fun UserList(modifier: Modifier = Modifier, userList: List<Data>, context: Context) {
-    if (userList.isNotEmpty()) {
-        MaterialTheme {
-            LazyColumn(modifier = modifier.fillMaxSize()) {
-                items(userList) { user ->
-                    UserRow(modifier, user, context)
-                    Divider(color = Color.LightGray)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun UserListFromDatabase(

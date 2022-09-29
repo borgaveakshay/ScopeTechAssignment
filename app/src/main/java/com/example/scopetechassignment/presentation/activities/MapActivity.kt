@@ -18,7 +18,7 @@ import com.example.scopetechassignment.data.models.db.VehicleInformationEntity
 import com.example.scopetechassignment.data.models.network.VehicleLocationModel
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.bitmapDescriptor
-import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
+import com.example.scopetechassignment.presentation.util.collectLifecycleFlow
 import com.example.scopetechassignment.presentation.viewmodels.GetVehicleLocationViewModel
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -48,7 +48,7 @@ class MapActivity : LocationActivity() {
         getVehicleLocation(userId.toString())
         checkForCurrentLocation()
         getVehicleDetailsEveryMinute()
-        collectLatestLifecycleFlow(viewModel.vehicleLocationResponseState) {
+        collectLifecycleFlow(viewModel.vehicleLocationResponseState) {
             when (it.status) {
                 Status.LOADING -> {
                     // Do nothing
