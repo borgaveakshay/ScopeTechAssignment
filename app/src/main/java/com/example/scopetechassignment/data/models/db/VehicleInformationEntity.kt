@@ -42,6 +42,6 @@ data class VehicleInformationEntity(
     val vin: String,
     @ColumnInfo(name = FIELD_YEAR)
     val year: String,
-    @ColumnInfo(name = FIELD_USER_ID)
+    @ColumnInfo(name = FIELD_USER_ID, index = true)
     val userId: Int?
 )

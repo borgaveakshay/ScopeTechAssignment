@@ -13,5 +13,5 @@ interface UserDao {
     fun insert(entity: UserEntity)
 
     @Query("Select * from user_entity where user_id =:userId ")
-    fun retrieveAllBy(userId: Int)
+    fun retrieveAllBy(userId: Int): List<UserEntity>
 }

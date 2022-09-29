@@ -6,7 +6,7 @@ import com.example.scopetechassignment.data.dao.UserDao
 import com.example.scopetechassignment.data.dao.VehicleInfoDao
 
 @Database(entities = [UserEntity::class, VehicleInformationEntity::class], version = 1)
-abstract class Database : RoomDatabase() {
+abstract class ScopeDatabase : RoomDatabase() {
 
     abstract fun getUserDao(): UserDao
     abstract fun getVehicleInfoDao(): VehicleInfoDao

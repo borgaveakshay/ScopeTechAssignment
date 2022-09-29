@@ -13,5 +13,5 @@ interface VehicleInfoDao {
     fun insert(vehicleInformationEntity: VehicleInformationEntity)
 
     @Query("Select * from vehicle_information where user_id = :userId")
-    fun retrieveAllBy(userId: Int)
+    fun retrieveAllBy(userId: Int): List<VehicleInformationEntity>
 }
