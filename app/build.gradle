@@ -99,6 +99,11 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.maps.android:maps-compose:2.7.2'
     implementation 'com.google.android.gms:play-services-location:20.0.0'
-
+    //Room
+    implementation 'androidx.room:room-runtime:2.4.3'
+    annotationProcessor 'androidx.room:room-compiler:2.4.3'
+    // To use Kotlin annotation processing tool (kapt)
+    kapt 'androidx.room:room-compiler:2.4.3'
+    testImplementation "androidx.room:room-testing:2.4.3"
 
 }

@@ -24,7 +24,7 @@ class GetUserListViewModel @Inject constructor(private val getUserDetailsUseCase
 
     private fun getUserDetails() {
         viewModelScope.launch {
-            _userDetailsState.value = getUserDetailsUseCase()
+            _userDetailsState.emit(getUserDetailsUseCase())
         }
     }
 }

@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.example.scopetechassignment.R
-import com.example.scopetechassignment.data.models.db.VehicleInformation
+import com.example.scopetechassignment.data.models.db.VehicleInformationEntity
 import com.example.scopetechassignment.data.models.network.VehicleLocationModel
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.bitmapDescriptor
@@ -155,14 +155,15 @@ fun LoadGoogleMap(
     vehicleList: List<VehicleLocationModel>,
     lastKnownLocation: Location,
     context: Context,
-    vehicleInformation: VehicleInformation = VehicleInformation(
+    vehicleInformationEntity: VehicleInformationEntity = VehicleInformationEntity(
         color = "Red",
         photo = "",
         make = "VW",
         model = "POLO",
         vehicleId = 1,
         vin = "",
-        year = "2012"
+        year = "2012",
+        userId = 1
     )
 ) {
     if (vehicleList.isNotEmpty()) {
@@ -196,8 +197,8 @@ fun LoadGoogleMap(
                         it.lat,
                         it.lon
                     ),
-                    title = "${vehicleInformation.make} ${vehicleInformation.model}",
-                    snippet = "Color: ${vehicleInformation.color}\nYear: ${vehicleInformation.year}",
+                    title = "${vehicleInformationEntity.make} ${vehicleInformationEntity.model}",
+                    snippet = "Color: ${vehicleInformationEntity.color}\nYear: ${vehicleInformationEntity.year}",
                     iconResourceId = R.drawable.gps_navigation
                 )
             }
