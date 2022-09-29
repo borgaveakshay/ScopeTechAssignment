@@ -2,6 +2,8 @@ package com.example.scopetechassignment.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.scopetechassignment.data.dao.UserDao
+import com.example.scopetechassignment.data.dao.VehicleInfoDao
 import com.example.scopetechassignment.data.models.db.ScopeDatabase
 import dagger.Module
 import dagger.Provides
@@ -21,5 +23,13 @@ object DatabaseModule {
     fun getDatabase(@ApplicationContext context: Context): ScopeDatabase =
         Room.databaseBuilder(context, ScopeDatabase::class.java, DATABASE_NAME)
             .build()
+
+    @Provides
+    @Singleton
+    fun getUserDao(database: ScopeDatabase): UserDao = database.getUserDao()
+
+    @Provides
+    @Singleton
+    fun getVehicleInfoDao(database: ScopeDatabase): VehicleInfoDao = database.getVehicleInfoDao()
 
 }

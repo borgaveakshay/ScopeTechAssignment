@@ -5,13 +5,14 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import com.example.scopetechassignment.data.models.db.UserEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
 
     @Insert(onConflict = REPLACE)
-    fun insert(entity: UserEntity)
+    suspend fun insert(entity: UserEntity)
 
     @Query("Select * from user_entity where user_id =:userId ")
-    fun retrieveAllBy(userId: Int): List<UserEntity>
+    fun retrieveAllBy(userId: Int): Flow<List<UserEntity>>
 }
