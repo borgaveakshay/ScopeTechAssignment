@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.scopetechassignment.data.models.db.UserEntity
 import com.example.scopetechassignment.data.models.network.Data
 import com.example.scopetechassignment.domain.Status
 import com.example.scopetechassignment.presentation.util.collectLatestLifecycleFlow
@@ -41,7 +42,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CollectUserDetails()
+            CollectDatabaseUserDetails()
+        }
+    }
+
+    @Composable
+    private fun CollectDatabaseUserDetails() {
+        val userResponseState = remember { mutableStateOf<List<UserEntity>>(emptyList()) }
+        UserListFromDatabase(userList = userResponseState.value, context = this)
+        collectLatestLifecycleFlow(viewModel.userDetailsFromDbState) {
+            when (it.status) {
+                Status.LOADING -> {
+                    //Do nothing
+                }
+                Status.ERROR -> {
+                    Toast.makeText(this@MainActivity, it.errorMessage, Toast.LENGTH_LONG).show()
+                }
+                Status.SUCCESS -> {
+                    it.data?.let { data ->
+                        userResponseState.value = data
+                    }
+                }
+            }
+
         }
     }
 
@@ -122,7 +145,77 @@ fun UserRow(
 }
 
 @Composable
+fun UserRow(
+    modifier: Modifier = Modifier,
+    user: UserEntity,
+    context: Context
+) {
+    MaterialTheme {
+
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .clickable(
+                    onClick = {
+                        user.userId?.let { userId ->
+                            val intent = Intent(context, MapActivity::class.java).apply {
+                                val bundle = Bundle()
+                                bundle.putInt("userId", userId)
+                                putExtras(bundle)
+                            }
+                            context.startActivity(intent)
+                        }
+                    },
+                    indication = rememberRipple(bounded = true),
+                    interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                ),
+        ) {
+
+            Image(
+                painter = rememberAsyncImagePainter(user.photoLink),
+                contentScale = ContentScale.FillWidth,
+                modifier = modifier
+                    .width(80.dp)
+                    .height(80.dp)
+                    .padding(10.dp),
+                contentDescription = "Profile Image"
+            )
+            Text(
+                text = "${user.firstName} ${user.surname}",
+                modifier = modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterVertically)
+                    .padding(top = 10.dp),
+                fontSize = 20.sp,
+                fontStyle = FontStyle.Italic
+            )
+        }
+    }
+}
+
+@Composable
 fun UserList(modifier: Modifier = Modifier, userList: List<Data>, context: Context) {
+    if (userList.isNotEmpty()) {
+        MaterialTheme {
+            LazyColumn(modifier = modifier.fillMaxSize()) {
+                items(userList) { user ->
+                    UserRow(modifier, user, context)
+                    Divider(color = Color.LightGray)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UserListFromDatabase(
+    modifier: Modifier = Modifier,
+    userList: List<UserEntity>,
+    context: Context
+) {
     if (userList.isNotEmpty()) {
         MaterialTheme {
             LazyColumn(modifier = modifier.fillMaxSize()) {
