@@ -40,11 +40,13 @@ class MapActivity : LocationActivity() {
         kotlin.math.ceil(System.currentTimeMillis() / 60_000.0).toLong() * 60_000
     private lateinit var getLocationJob: Job
     private var vehicleList: List<VehicleLocationModel>? = null
+    private var vehicleInfoList: List<VehicleInformationEntity>? = null
     private var lastKnownLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         userId = intent.extras?.getInt("userId")
+        collectVehicleInformation()
         getVehicleLocation(userId.toString())
         checkForCurrentLocation()
         getVehicleDetailsEveryMinute()
@@ -65,11 +67,29 @@ class MapActivity : LocationActivity() {
         setMapView()
     }
 
+    private fun collectVehicleInformation() {
+        userId?.let { viewModel.getVehicleInfo(it) }
+        collectLifecycleFlow(viewModel.vehicleInfoState) {
+            when (it.status) {
+                Status.LOADING -> {
+                    // Do nothing
+                }
+                Status.ERROR -> {
+                    Toast.makeText(this, "Error: ${it.errorMessage}", Toast.LENGTH_LONG).show()
+                }
+                Status.SUCCESS -> {
+                    vehicleInfoList = it.data
+                }
+            }
+        }
+    }
+
     private fun setMapView() {
         setContent {
             GetVehicleLocationAndMap(
                 lastKnownLocation = lastKnownLocation,
-                vehicleList = vehicleList
+                vehicleList = vehicleList,
+                vehicleInformationList = vehicleInfoList
             )
         }
     }
@@ -113,17 +133,19 @@ class MapActivity : LocationActivity() {
     @Composable
     private fun GetVehicleLocationAndMap(
         lastKnownLocation: Location?,
-        vehicleList: List<VehicleLocationModel>?
+        vehicleList: List<VehicleLocationModel>?,
+        vehicleInformationList: List<VehicleInformationEntity>?
     ) {
         lastKnownLocation?.let { location ->
             vehicleList?.let { vehicleList ->
                 LoadGoogleMap(
                     vehicleList = vehicleList,
                     lastKnownLocation = location,
-                    context = this
+                    context = this,
+                    vehicleInformationList = vehicleInformationList
                 )
             }
-        } ?: GoogleMap(modifier = Modifier.fillMaxSize())
+        }
     }
 
     private fun getVehicleLocation(userId: String?) = viewModel.getVehicleLocation(userId)
@@ -155,16 +177,7 @@ fun LoadGoogleMap(
     vehicleList: List<VehicleLocationModel>,
     lastKnownLocation: Location,
     context: Context,
-    vehicleInformationEntity: VehicleInformationEntity = VehicleInformationEntity(
-        color = "Red",
-        photo = "",
-        make = "VW",
-        model = "POLO",
-        vehicleId = 1,
-        vin = "",
-        year = "2012",
-        userId = 1
-    )
+    vehicleInformationList: List<VehicleInformationEntity>?
 ) {
     if (vehicleList.isNotEmpty()) {
         val cameraPositionState = rememberCameraPositionState {
@@ -190,18 +203,21 @@ fun LoadGoogleMap(
                 ), title = "Its Mee", snippet = "My Location", iconResourceId = R.drawable.location
             )
 
-            vehicleList.forEach {
-                MapMarker(
-                    context = context,
-                    position = LatLng(
-                        it.lat,
-                        it.lon
-                    ),
-                    title = "${vehicleInformationEntity.make} ${vehicleInformationEntity.model}",
-                    snippet = "Color: ${vehicleInformationEntity.color}\nYear: ${vehicleInformationEntity.year}",
-                    iconResourceId = R.drawable.gps_navigation
-                )
+            vehicleInformationList?.forEach { vehicleInfo ->
+                vehicleList.forEach { location ->
+                    MapMarker(
+                        context = context,
+                        position = LatLng(
+                            location.lat,
+                            location.lon
+                        ),
+                        title = "${vehicleInfo.make} ${vehicleInfo.model}",
+                        snippet = "Color: ${vehicleInfo.color}\nYear: ${vehicleInfo.year}",
+                        iconResourceId = R.drawable.gps_navigation
+                    )
+                }
             }
+
         }
     }
 }
