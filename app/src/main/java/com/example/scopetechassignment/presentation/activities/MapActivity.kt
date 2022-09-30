@@ -64,7 +64,6 @@ class MapActivity : LocationActivity() {
                 }
             }
         }
-        setMapView()
     }
 
     private fun collectVehicleInformation() {
@@ -149,6 +148,10 @@ class MapActivity : LocationActivity() {
     }
 
     private fun getVehicleLocation(userId: String?) = viewModel.getVehicleLocation(userId)
+
+    override fun locationPermissionGiven() {
+        setMapView()
+    }
 
 }
 

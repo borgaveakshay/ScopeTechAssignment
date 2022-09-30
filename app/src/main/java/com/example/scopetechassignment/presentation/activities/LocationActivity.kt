@@ -31,6 +31,14 @@ open class LocationActivity : AppCompatActivity() {
         ) != PackageManager.PERMISSION_GRANTED)
     }
 
+    /**
+     * [locationPermissionGiven] function Can override this function in extended class to perform task when location permission is
+     * available
+     */
+    protected open fun locationPermissionGiven() {
+
+    }
+
     private fun checkForLocationPermission() {
         when {
             ContextCompat.checkSelfPermission(
@@ -38,6 +46,7 @@ open class LocationActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                locationPermissionGiven()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 Toast.makeText(
@@ -45,11 +54,6 @@ open class LocationActivity : AppCompatActivity() {
                     "Application requires location permission for better map performance",
                     Toast.LENGTH_LONG
                 ).show()
-                // Ask for permission again
-                requestPermissions(
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    LOCATION_REQUEST_CODE
-                )
             }
             else -> {
                 requestPermissions(
@@ -71,6 +75,7 @@ open class LocationActivity : AppCompatActivity() {
                             grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) {
                     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                    locationPermissionGiven()
 
                 } else {
                     Toast.makeText(
