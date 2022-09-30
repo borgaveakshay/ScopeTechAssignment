@@ -20,8 +20,10 @@ class ScopeAssignmentApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         WorkManager.getInstance(this).enqueue(
-            PeriodicWorkRequestBuilder<DataSyncWorker>(1, TimeUnit.MINUTES)
-                .build()
+            PeriodicWorkRequestBuilder<DataSyncWorker>(
+                12, TimeUnit.HOURS,
+                1, TimeUnit.HOURS
+            ).build()
         )
     }
 
