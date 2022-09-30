@@ -1,7 +1,9 @@
 package com.example.scopetechassignment.presentation.util
 
 import android.app.Application
-import androidx.work.*
+import androidx.work.Configuration
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.scopetechassignment.data.schedulers.DataSyncWorker
 import com.example.scopetechassignment.data.schedulers.MyWorkerFactory
 import com.example.scopetechassignment.domain.usecases.StoreUserDetailsUseCase
@@ -17,14 +19,8 @@ class ScopeAssignmentApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.METERED)
-            .build()
-
         WorkManager.getInstance(this).enqueue(
             PeriodicWorkRequestBuilder<DataSyncWorker>(1, TimeUnit.MINUTES)
-                .setConstraints(constraints)
                 .build()
         )
     }

@@ -1,9 +1,11 @@
 package com.example.scopetechassignment.data.di
 
 import com.example.scopetechassignment.data.repositoryImpl.GetUserDetailsRepositoryImpl
+import com.example.scopetechassignment.data.repositoryImpl.GetVehicleInformationRepoImpl
 import com.example.scopetechassignment.data.repositoryImpl.StoreUserDetailsRepoImpl
 import com.example.scopetechassignment.data.repositoryImpl.VehicleLocationRepoImpl
 import com.example.scopetechassignment.domain.repositories.GetUserDetailsRepository
+import com.example.scopetechassignment.domain.repositories.GetVehicleInformationRepository
 import com.example.scopetechassignment.domain.repositories.GetVehicleLocationRepository
 import com.example.scopetechassignment.domain.repositories.StoreUserDetailsRepository
 import dagger.Binds
@@ -22,4 +24,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindStoreUserDetailsRepository(storeUserDetailsRepoImpl: StoreUserDetailsRepoImpl): StoreUserDetailsRepository
+
+    @Binds
+    abstract fun bindGetVehicleInformationRepository(getVehicleInformationRepoImpl: GetVehicleInformationRepoImpl): GetVehicleInformationRepository
 }

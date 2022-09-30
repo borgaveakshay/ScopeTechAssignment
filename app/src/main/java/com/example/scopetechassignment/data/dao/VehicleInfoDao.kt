@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.scopetechassignment.data.models.db.VehicleInformationEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface VehicleInfoDao {
@@ -14,5 +13,5 @@ interface VehicleInfoDao {
     suspend fun insert(vehicleInformationEntity: VehicleInformationEntity)
 
     @Query("Select * from vehicle_information where user_id = :userId")
-    fun retrieveAllBy(userId: Int): Flow<List<VehicleInformationEntity>>
+    fun retrieveAllBy(userId: Int): List<VehicleInformationEntity>
 }
