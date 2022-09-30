@@ -21,31 +21,33 @@ class StoreUserDetailsRepoImpl @Inject constructor(
             Status.SUCCESS -> {
                 response.data?.let { userListResponse ->
                     userListResponse.userData.map { data ->
-                        userDao.insert(
-                            UserEntity(
-                                userId = data.userid,
-                                firstName = data.owner?.name,
-                                surname = data.owner?.surname,
-                                photoLink = data.owner?.photo
-                            )
-                        )
-                        data.vehicles?.map { vehicle ->
-                            vehicleInfoDao.insert(
-                                VehicleInformationEntity(
-                                    vehicleId = vehicle.vehicleId,
-                                    color = vehicle.color,
-                                    photo = vehicle.photo,
-                                    make = vehicle.make,
-                                    model = vehicle.model,
-                                    vin = vehicle.vin,
-                                    year = vehicle.year,
-                                    userId = data.userid
+                        data.userid?.let {
+                            data.owner?.let { owner ->
+                                userDao.insert(
+                                    UserEntity(
+                                        userId = data.userid,
+                                        firstName = owner.name,
+                                        surname = owner.surname,
+                                        photoLink = owner.photo
+                                    )
                                 )
-                            )
+                            }
+                            data.vehicles?.map { vehicle ->
+                                vehicleInfoDao.insert(
+                                    VehicleInformationEntity(
+                                        vehicleId = vehicle.vehicleId,
+                                        color = vehicle.color,
+                                        photo = vehicle.photo,
+                                        make = vehicle.make,
+                                        model = vehicle.model,
+                                        vin = vehicle.vin,
+                                        year = vehicle.year,
+                                        userId = data.userid
+                                    )
+                                )
+                            }
                         }
-
                     }
-
                 }
             }
             else -> {
